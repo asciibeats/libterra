@@ -26,7 +26,7 @@ uninstall:
 
 demo: $(OUTFILE) src/demo.cc
 	gcc $(CFLAGS) src/demo.cc -L. -lstdc++ -lterra -o demo
-	chmod +x demo
+	chmod u+x demo
 
 clean:
 	rm -f $(OUTFILE) src/*.o demo
