@@ -2,17 +2,17 @@
 #define terra_h
 
 #include <map>
-#include <vector>
 
 using namespace std;
 
 class SquareMap
 {
   public:
+    int seed;
     int size;
-    int width;
+    int depth;
     map<int, int> tiles;
-    void generate(int seed, int size, float frequency, int octaves, float lacunarity, float persistence, float erosion, float water, float heat);
+    void generate(int seed, float size, float depth, float frequency, int octaves, float lacunarity, float persistence, float erosion);
     void print();
 };
 
