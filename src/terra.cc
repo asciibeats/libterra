@@ -18,82 +18,43 @@ static inline int adjacent(int size, int position, int crumb)
   return y * size + x;
 }
 
-void SquareMap::generate(int seed, float size, float depth, float frequency, int octaves, float lacunarity, float persistence, float erosion)
+SquareMap::SquareMap(int seed, int size, int depth, float frequency, int octaves, float lacunarity, float persistence)
 {
-  this->seed = seed;
-  this->size = size;
-  this->depth = depth;
-  int length = size * size;
-
   mt19937_64 rng(seed);
   uniform_real_distribution<float> uni(FLT_MIN, 100.0f);
 
-  float offset = uni(rng);
-  map<int, float> heights;
-  float isize = 1.0f / size;
+  this->seed = seed;
+  this->offset = uni(rng);
+  this->size = size;
+  this->depth = depth;
+  this->frequency = frequency;
+  this->octaves = octaves;
+  this->lacunarity = lacunarity;
+  this->persistence = persistence;
+}
 
-  float min = 1.0f;
-  float max = 0.0f;
+int SquareMap::generate(int position)
+{
+  float isize = 1.0f / this->size;
+  int x = position % this->size;
+  int y = position * isize;
+  int height = rn_perlinringsum2((0.5f + x) * isize, (0.5f + y) * isize, this->offset, this->frequency, this->octaves, this->lacunarity, this->persistence) * this->depth;
 
-  for (int y = 0, i = 0; y < size; y++)
+  tiles[position] = height;
+
+  return height;
+}
+
+void SquareMap::generate()
+{
+  float isize = 1.0f / this->size;
+
+  for (int y = 0, position = 0; y < this->size; y++)
   {
-    for (int x = 0; x < size; x++, i++)
+    for (int x = 0; x < this->size; x++, position++)
     {
-      float h = rn_perlinringsum2((0.5f + x) * isize, (0.5f + y) * isize, offset, frequency, octaves, lacunarity, persistence);
-      heights[i] = h;
-
-      if (h < min)
-      {
-        min = h;
-      }
-
-      if (h > max)
-      {
-        max = h;
-      }
+      tiles[position] = rn_perlinringsum2((0.5f + x) * isize, (0.5f + y) * isize, this->offset, this->frequency, this->octaves, this->lacunarity, this->persistence) * this->depth;
     }
-  }
-
-  vector<float> deposits (length, 0);
-
-  for (map<int, float>::iterator it = heights.begin(); it != heights.end(); it++)
-  {
-    map<int, float> deltas;
-
-    for (int crumb = 0; crumb < 4; crumb++)
-    {
-      int position = adjacent(size, it->first, crumb);
-      float delta = it->second - heights[position];
-
-      if (delta > 0)
-      {
-        deltas[position] = delta * 0.5f * erosion;
-      }
-    }
-
-    int size = deltas.size();
-
-    if (size > 0)
-    {
-      float isize = 1.0f / size;
-
-      for (map<int, float>::iterator it2 = deltas.begin(); it2 != deltas.end(); it2++)
-      {
-        float delta = it2->second * isize;
-        deposits[it->first] -= delta;
-        deposits[it2->first] += delta;
-      }
-    }
-  }
-
-  for (int j = 0; j < length; j++)
-  {
-    heights[j] += deposits[j];
-  }
-
-  for (map<int, float>::iterator it = heights.begin(); it != heights.end(); ++it)
-  {
-    tiles[it->first] = (it->second - min) * (1.0f / (max - min + FLT_EPSILON)) * depth;
   }
 }
 

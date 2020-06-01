@@ -9,10 +9,19 @@ class SquareMap
 {
   public:
     int seed;
+    float offset;
     int size;
     int depth;
+    float frequency;
+    int octaves;
+    float lacunarity;
+    float persistence;
+
     map<int, int> tiles;
-    void generate(int seed, float size, float depth, float frequency, int octaves, float lacunarity, float persistence, float erosion);
+
+    SquareMap(int seed, int size, int depth, float frequency, int octaves, float lacunarity, float persistence);
+    int generate(int position);
+    void generate();
     void print();
 };
 
